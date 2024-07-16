@@ -3,9 +3,9 @@ description: 'demo deep_seek llm with spi'
 model_name: 'deepseek-chat'
 max_tokens: 4000
 max_context_length: 32000
-api_key_env: 'DEEPSEEK_API_KEY'
-api_base_env: 'DEEPSEEK_API_BASE'
+api_key_env: 'sk-73cf8f2dba1d48ab8ba840ec365b8f05'
+api_base_env: 'https://api.deepseek.com'
 metadata:
-  type: 'LLM'
-  module: 'agentuniverse.llm.openai_style_llm'
-  class: 'OpenAIStyleLLM'
+  type: 'LLM' 
+  module: 'agentuniverse.llm.default.deep_seek_openai_style_llm'
+  class: 'DefaultDeepSeekLLM'
