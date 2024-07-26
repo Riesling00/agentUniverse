@@ -3,7 +3,7 @@ description: 'demo deep_seek llm with spi'
 model_name: 'deepseek-chat'
 max_tokens: 4000
 max_context_length: 32000
-api_key_env: 'sk-73cf8f2dba1d48ab8ba840ec365b8f05'
+api_key_env: 'sk-bcdc4facc1c14dc781a5d4885ae7ea54'
 api_base_env: 'https://api.deepseek.com'
 metadata:
   type: 'LLM' 

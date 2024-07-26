@@ -175,7 +175,7 @@ class OpenAIStyleLLM(LLM):
         # elif 'api_key_env' in component_configer.configer.value:
         #     self.api_key = get_from_env(component_configer.configer.value.get('api_key_env'))
         self.api_base = "https://api.deepseek.com"
-        self.api_key = "sk-73cf8f2dba1d48ab8ba840ec365b8f05"
+        self.api_key = "sk-bcdc4facc1c14dc781a5d4885ae7ea54"
         print("component_configer", component_configer)
         return super().initialize_by_component_configer(component_configer)
 
