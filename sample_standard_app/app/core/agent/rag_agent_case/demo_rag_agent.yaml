@@ -4,7 +4,8 @@ info:
 profile:
   prompt_version: demo_rag_agent.cn
   llm_model:
-    name: 'qwen_llm'
+    name: 'deep_seek_llm'
+    model_name: 'deepseek-chat'
 #    model_name: 'gpt-4o'
 plan:
   planner:

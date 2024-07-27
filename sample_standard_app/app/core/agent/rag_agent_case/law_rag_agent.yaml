@@ -18,8 +18,8 @@ profile:
 
     事件是: {input}
   llm_model:
-    name: 'qwen_llm'
-    model_name: 'qwen-max'
+    name: 'deep_seek_llm'
+    model_name: 'deepseek-chat'
 plan:
   planner:
     name: 'rag_planner'
