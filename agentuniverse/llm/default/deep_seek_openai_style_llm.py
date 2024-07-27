@@ -24,7 +24,7 @@ DEEpSEEkMAXCONTETNLENGTH = {
     "claude-instant-1.2": 100000
 }
 
-
+ 
 class DefaultDeepSeekLLM(OpenAIStyleLLM):
     """The agentUniverse default openai llm module.
 
