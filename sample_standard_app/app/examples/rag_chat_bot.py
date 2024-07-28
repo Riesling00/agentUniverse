@@ -13,20 +13,20 @@ from agentuniverse.base.agentuniverse import AgentUniverse
 AgentUniverse().start(config_path='../../config/config.toml')
 
 
-def chat(question: str):
+def chat():
     """ Rag agent example.
 
     The rag agent in agentUniverse becomes a chatbot and can ask questions to get the answer.
     """
-
     instance: Agent = AgentManager().get_instance_obj('demo_rag_agent')
-    output_object: OutputObject = instance.run(input=question)
-    res_info = f"\nRag chat bot execution result is :\n"
-    res_info += output_object.get_data('output')
-    print(res_info)
+    for i in range(5):
+        user_input = input("请输入内容：")
+        output_object: OutputObject = instance.run(input=user_input)
+        res_info = f"\nRag chat bot execution result is :\n"
+        res_info += output_object.get_data('output')
+        print(res_info)
 
 
 if __name__ == '__main__':
-    # chat("帮我分析下2023年巴菲特减持比亚迪原因")
-    chat("我想问下如何可以好好学英语")
+    chat()
 

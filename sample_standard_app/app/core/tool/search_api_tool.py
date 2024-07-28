@@ -8,14 +8,34 @@ import os
 
 
 from typing import Optional
-
+import threading
 from langchain_community.utilities import SearchApiAPIWrapper
 from pydantic import Field
-
+from loguru import logger
+import traceback
 from agentuniverse.agent.action.tool.tool import Tool, ToolInput
 from agentuniverse.base.config.component_configer.configers.tool_configer import ToolConfiger
 from agentuniverse.base.util.env_util import get_from_env
 os.environ['SEARCHAPI_API_KEY'] = 'ZNtsUKZ38NcxWKv9HWp2NbfZ'
+
+_rag_query_text = """
+You are a large language AI assistant built by Lepton AI. You are given a user question, and please write clean, concise and accurate answer to the question. You will be given a set of related contexts to the question, each starting with a reference number, where x is a number. Please use the context and cite the context at the end of each sentence if applicable.
+
+Your answer must be correct, accurate and written by an expert using an unbiased and professional tone. Please limit to 1024 tokens. Do not give any information that is not related to the question, and do not repeat. Say "information is missing on" followed by the related topic, if the given context do not provide sufficient information.
+
+Please cite the contexts with the reference numbers, in the format. If a sentence comes from multiple contexts, please list all applicable citations. Other than code and specific names and citations, your answer must be written in the same language as the question.
+
+Remember, don't blindly repeat the contexts verbatim. And here is the user question:
+"""
+
+stop_words = [
+    "<|im_end|>",
+    "[End]",
+    "[end]",
+    "\nReferences:\n",
+    "\nSources:\n",
+    "End.",
+]
 
 class SearchAPITool(Tool):
     """
@@ -57,7 +77,28 @@ class SearchAPITool(Tool):
         input = tool_input.get_data("input")
         if self.search_type == "json":
             return self.search_api_wrapper.results(query=input, **search_params)
-        return self.search_api_wrapper.run(query=input, **search_params)
+        context = self.search_api_wrapper.run(query=input, **search_params)
+    
+
+        try:
+            client = self.local_client()
+            response = client.chat.completions.create(
+                model="deepseek-chat",
+                messages=[
+                    {"role": "system", "content": _rag_query_text},
+                    {"role": "user", "content": context},
+                ],
+                max_tokens=1024,
+                stop=stop_words,
+                stream=False,
+                temperature=0.9,
+            )
+            print("llm_response", response.choices[0].message.content)
+        except Exception as e:
+            logger.error(f"encountered error: {e}\n{traceback.format_exc()}")
+
+        return response.choices[0].message.content
+        
 
     def initialize_by_component_configer(self, component_configer: ToolConfiger) -> 'Tool':
         """Initialize the tool by the component configer."""
@@ -67,3 +108,21 @@ class SearchAPITool(Tool):
         self.search_type = component_configer.configer.value.get('search_type', 'common')
         return self
 
+    def local_client(self):
+        """
+        Gets a thread-local client, so in case openai clients are not thread safe,
+        each thread will have its own client.
+        """
+        import openai
+
+        API_KEY = "sk-bcdc4facc1c14dc781a5d4885ae7ea54"
+        BASE_URL = "https://api.deepseek.com"
+
+        client = openai.OpenAI(
+            base_url=BASE_URL,
+            api_key=API_KEY,
+            # We will set the connect timeout to be 10 seconds, and read/write
+            # timeout to be 120 seconds, in case the inference server is
+            # overloaded.
+        )
+        return client
