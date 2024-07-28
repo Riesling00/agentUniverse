@@ -15,7 +15,7 @@ from chromadb.api.models.Collection import Collection
 from agentuniverse.agent.action.knowledge.store.document import Document
 from agentuniverse.agent.action.knowledge.store.query import Query
 from agentuniverse.agent.action.knowledge.store.store import Store
-
+os.environ['DASHSCOPE_API_KEY'] = 'sk-a3edbd24d3c44617a8f90564e436c8f1'
 
 class ChromaStore(Store):
     """Object encapsulating the ChromaDB store that has vector search enabled.

@@ -91,6 +91,7 @@ class ReActPlanner(Planner):
         for agent_name in agents:
             agent_tool: Agent = AgentManager().get_instance_obj(agent_name)
             lc_tools.append(agent_tool.as_langchain_tool())
+        print("lc_tools", lc_tools)
         return lc_tools
 
     def handle_prompt(self, agent_model: AgentModel, planner_input: dict) -> Prompt:

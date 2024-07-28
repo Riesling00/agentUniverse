@@ -9,7 +9,6 @@ import json
 
 from typing import Optional, Type
 
-from langchain_community.tools import DuckDuckGoSearchResults
 from langchain_core.tools import BaseTool
 
 from agentuniverse.agent.action.tool.tool import Tool, ToolInput

@@ -25,8 +25,9 @@ class GoogleSearchTool(Tool):
     """
 
     serper_api_key: Optional[str] = Field(default_factory=lambda: get_from_env("SERPER_API_KEY"))
-
+    
     def execute(self, tool_input: ToolInput):
+        print("serper_api_key", self.serper_api_key)
         input = tool_input.get_data("input")
         if self.serper_api_key is None:
             return MockSearchTool().execute(tool_input=tool_input)

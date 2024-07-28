@@ -15,7 +15,7 @@ from pydantic import Field
 from agentuniverse.agent.action.tool.tool import Tool, ToolInput
 from agentuniverse.base.config.component_configer.configers.tool_configer import ToolConfiger
 from agentuniverse.base.util.env_util import get_from_env
-
+os.environ['SEARCHAPI_API_KEY'] = 'ZNtsUKZ38NcxWKv9HWp2NbfZ'
 
 class SearchAPITool(Tool):
     """
@@ -66,3 +66,4 @@ class SearchAPITool(Tool):
         self.search_params = component_configer.configer.value.get('search_params', {})
         self.search_type = component_configer.configer.value.get('search_type', 'common')
         return self
+
