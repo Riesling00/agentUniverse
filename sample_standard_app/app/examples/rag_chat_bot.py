@@ -9,7 +9,7 @@ from agentuniverse.agent.output_object import OutputObject
 from agentuniverse.agent.agent import Agent
 from agentuniverse.agent.agent_manager import AgentManager
 from agentuniverse.base.agentuniverse import AgentUniverse
-
+from demo import Master
 AgentUniverse().start(config_path='../../config/config.toml')
 
 
@@ -19,10 +19,14 @@ def chat():
     The rag agent in agentUniverse becomes a chatbot and can ask questions to get the answer.
     """
     instance: Agent = AgentManager().get_instance_obj('demo_rag_agent')
+    master = Master() 
     for i in range(5):
         user_input = input("请输入内容：")
+        print(f"\nNot only:\n")
+        result = master.run(user_input)
+        
         output_object: OutputObject = instance.run(input=user_input)
-        res_info = f"\nRag chat bot execution result is :\n"
+        res_info = f"\nBut also:\n"
         res_info += output_object.get_data('output')
         print(res_info)
 

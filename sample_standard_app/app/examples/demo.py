@@ -195,6 +195,7 @@ class Master:
         chain = ChatPromptTemplate.from_template(prompt) | self.chatmodel | StrOutputParser()
         result = chain.invoke({"query": query})
         self.emotion = result
+        print("self.emotion:", self.emotion)
         return result
 
 
