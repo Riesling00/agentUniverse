@@ -10,6 +10,14 @@ from langchain.prompts import (
 from langchain_core.output_parsers import StrOutputParser
 from flask import Flask, request, jsonify
 from flask_socketio import SocketIO
+
+from agentuniverse.agent.output_object import OutputObject
+from agentuniverse.agent.agent import Agent
+from agentuniverse.agent.agent_manager import AgentManager
+from agentuniverse.base.agentuniverse import AgentUniverse
+
+AgentUniverse().start(config_path='../../config/config.toml')
+
 app = Flask(__name__)
 socketio = SocketIO(app)
 from langchain_core.tools import tool
@@ -180,6 +188,27 @@ class Master:
         result = self.agent_executor.invoke({"input": query})
         # 返回执行器的响应
         return result
+    
+    def chat_as_sell(self, question: str):
+        """ Rag agent example.
+
+        The rag agent in agentUniverse becomes a chatbot and can ask questions to get the answer.
+        """
+
+        instance: Agent = AgentManager().get_instance_obj('law_rag_agent')
+        output_object: OutputObject = instance.run(input=question)
+
+        question = f"\nYour event is :\n"
+        question += output_object.get_data('input')
+        print(question)
+
+        background_info = f"\nRetrieved background is :\n"
+        background_info += output_object.get_data('background').replace("\n","")
+        print(background_info)
+
+        res_info = f"\nRag chat bot execution result is :\n"
+        res_info += output_object.get_data('output')
+        print(res_info)
 
     def emotion_chain(self, query: str):
         prompt = """根据用户的输入判断用户的情绪，回应的规则如下：
@@ -248,4 +277,5 @@ class Master:
 if __name__ == "__main__":
     query = "这英语太难了,我该怎么办."
     master = Master()  # 初始化Master对象
-    master.run(query)
+    # master.run(query)
+    master.chat_as_sell(query)
