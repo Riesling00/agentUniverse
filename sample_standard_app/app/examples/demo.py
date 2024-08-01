@@ -181,6 +181,7 @@ class Master:
         # 调用代理执行器并获取结果
         result = self.agent_executor.invoke({"input": query})
         # 返回执行器的响应
+        # print("----------", result)
         return result
     
     # def chat_as_sell(self, question: str):

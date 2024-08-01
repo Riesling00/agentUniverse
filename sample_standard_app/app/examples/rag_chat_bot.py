@@ -12,8 +12,12 @@ from agentuniverse.agent.agent import Agent
 from agentuniverse.agent.agent_manager import AgentManager
 from agentuniverse.base.agentuniverse import AgentUniverse
 from demo import Master
-AgentUniverse().start(config_path='../../config/config.toml')
 
+from openai import OpenAI
+AgentUniverse().start(config_path='../../config/config.toml')
+API_KEY = "sk-bcdc4facc1c14dc781a5d4885ae7ea54"
+BASE_URL = "https://api.deepseek.com"
+client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
 class AgentDemo():
     def __init__(self):
@@ -23,29 +27,37 @@ class AgentDemo():
         self.user_input = ""
         self.res_info = ""
 
-    def chat(self):
+    def chat(self, user_input = None):
         """ Rag agent example.
 
         The rag agent in agentUniverse becomes a chatbot and can ask questions to get the answer.
         """
-
-        for i in range(5):
-            # user_input = input("请输入内容,如果想退出请输入停止: ")
-            if self.user_input == '停止':
-                break
-            print(f"\nNot only:\n")
-            result = self.master.run(self.user_input)
+        self.user_input = user_input
+        if self.user_input == '停止':
+            exit
+        print(f"\nNot only:\n")
+        result = f"\nNot only:\n" + self.master.run(self.user_input)["output"]
             
-            output_object: OutputObject = self.instance.run(input=self.user_input)
-            output = self.instance_law.run(input=self.user_input)
-            result = result + '\n' + f"\nBut also:\n"
-            result += '\n' + output.get_data('output')
-            result += self.output_object.get_data('output')
-            
-            self.res_info = result
-
+        output_object: OutputObject = self.instance.run(input=self.user_input)
+        output = self.instance_law.run(input=self.user_input)
+        result += '\n' + f"\nBut also:\n"
+        result += '\n' + output.get_data('output')
+        result += '\n' + output_object.get_data('output')
+        response = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant，把输入内容进行，保持感情基调"},
+                {"role": "user", "content": result},
+            ],
+            stream=False
+        ).choices[0].message.content
+        self.res_info = response
+        print(f"\n{response}")
+        return response
 
 if __name__ == '__main__':
     x = AgentDemo()
-    x.chat()
+    for i in range(5):
+        user_input = input("请输入内容,如果想退出请输入停止: ")
+        x.chat(user_input)
 

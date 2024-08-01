@@ -12,8 +12,8 @@ plan:
     name: 'rag_planner'
 action:
   tool:
-    # - 'search_api_bing_tool'
-    - 'google_search_tool'
+    - 'search_api_bing_tool'
+    # - 'google_search_tool'
 memory:
   name: ''
 metadata:
