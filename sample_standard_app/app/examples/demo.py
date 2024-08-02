@@ -1,3 +1,5 @@
+import copy
+
 from langchain import hub
 from langchain_community.chat_models import ChatOpenAI
 from langchain.agents import AgentExecutor, create_openai_tools_agent
@@ -36,8 +38,8 @@ class Master:
         API_KEY = "sk-bcdc4facc1c14dc781a5d4885ae7ea54"
         BASE_URL = "https://api.deepseek.com"
         self.chatmodel = ChatOpenAI(
-            model='deepseek-chat', 
-            openai_api_key=API_KEY, 
+            model='deepseek-chat',
+            openai_api_key=API_KEY,
             openai_api_base=BASE_URL,
             temperature=0,
             streaming=True,
@@ -171,7 +173,43 @@ class Master:
             verbose=True,
         )
 
+    def __deepcopy__(self, memo):
+        # 创建 Master 类的新实例
+        new_master = type(self)()
 
+        # 将当前对象的引用添加到 memo 字典中
+        memo[id(self)] = new_master
+
+        # 复制可深拷贝的属性
+        # for key, value in self.__dict__.items():
+        #     if key == 'chatmodel' or key == 'agent_executor':
+        #         # 这些属性可能包含网络请求和API密钥，不能直接深拷贝
+        #         # 根据实际情况，可能需要重新创建这些对象或设置为None
+        #         setattr(new_master, key, None)
+        #     elif key == 'memory':
+        #         # 内存状态可以深拷贝
+        #         setattr(new_master, key, copy.deepcopy(value, memo))
+        #     else:
+        #         # 其他属性的深拷贝
+        #         setattr(new_master, key, copy.deepcopy(value, memo))
+        #
+        # # 初始化或重新创建不能深拷贝的属性
+        # # 例如，重新创建 chatmodel 和 agent_executor
+        # # 这里需要根据实际的类定义和需求来编写代码
+        # new_master.chatmodel = self._recreate_chatmodel()
+        # new_master.agent_executor = self._recreate_agent_executor()
+
+        return new_master
+
+    # def _recreate_chatmodel(self):
+    #     # 根据实际情况重新创建 chatmodel
+    #     # 可能需要使用新的API密钥或其他参数
+    #     pass
+    #
+    # def _recreate_agent_executor(self):
+    #     # 根据实际情况重新创建 agent_executor
+    #     # 可能需要使用新的工具列表或其他参数
+    #     pass
 
 
     # 定义运行方法
@@ -183,7 +221,7 @@ class Master:
         # 返回执行器的响应
         # print("----------", result)
         return result
-    
+
     # def chat_as_sell(self, question: str):
     #     """ Rag agent example.
 

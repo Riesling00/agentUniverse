@@ -1,6 +1,6 @@
 # !/usr/bin/env python3
 # -*- coding:utf-8 -*-
-
+import copy
 # @Time    : 2024/5/8 11:44
 # @Author  : wangchongshi
 # @Email   : wangchongshi.wcs@antgroup.com
@@ -23,7 +23,7 @@ class AgentDemo():
     def __init__(self):
         self.instance: Agent = AgentManager().get_instance_obj('demo_rag_agent')
         self.instance_law: Agent = AgentManager().get_instance_obj('law_rag_agent')
-        self.master = Master() 
+        self.master = Master()
         self.user_input = ""
         self.res_info = ""
 
@@ -32,7 +32,8 @@ class AgentDemo():
 
         The rag agent in agentUniverse becomes a chatbot and can ask questions to get the answer.
         """
-        self.user_input = user_input
+        if user_input != None:
+            self.user_input = user_input
         if self.user_input == '停止':
             exit
         print(f"\nNot only:\n")
@@ -54,6 +55,19 @@ class AgentDemo():
         self.res_info = response
         print(f"\n{response}")
         return response
+
+    def __deepcopy__(self, memo):
+        # 创建一个新的 AgentDemo 实例
+        new_agent_demo = type(self)()
+        # 使用 deepcopy 递归复制所有属性
+        for key, value in self.__dict__.items():
+            if isinstance(value, (Agent, Master)):
+                # 确保 Agent 和 Master 对象也能被深拷贝
+                setattr(new_agent_demo, key, copy.deepcopy(value, memo))
+            else:
+                setattr(new_agent_demo, key, copy.deepcopy(value, memo))
+        # print("new_agent_demo", new_agent_demo)
+        return new_agent_demo
 
 if __name__ == '__main__':
     x = AgentDemo()

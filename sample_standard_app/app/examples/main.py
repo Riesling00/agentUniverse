@@ -7,11 +7,13 @@ from rag_chat_bot import *
 import os
 import copy
 STREAM_INTERVAL = 0.2
-
+os.environ["no_proxy"] = "localhost,127.0.0.1,::1"
 
 def gen_guiding_button_clicked(aign, user_input, res_info):
+    print("res_info", res_info)
     aign.res_info = res_info
     aign.user_input = user_input
+    print("user_input", user_input)
     gen_setting_thread = threading.Thread(target=aign.chat)
     gen_setting_thread.start()
 
@@ -49,8 +51,7 @@ if __name__ == "__main__":
 
     with gr.Blocks(css=css) as demo:
         gr.Markdown("## AI 教育聊天客服 Demo")
-        x = AgentDemo()
-        aign = gr.State(x)
+        aign = gr.State(AgentDemo())
        
         with gr.Row():
             with gr.Column(scale=0, elem_id="row1"):
@@ -65,7 +66,7 @@ if __name__ == "__main__":
             with gr.Column(scale=3, elem_id="row2"):
                 chatBox = gr.Chatbot(height=f"80vh", label="输出")
 
-
+        print(f"\start:\n")
         gen_guiding_button.click(
             gen_guiding_button_clicked,
             [aign, user_idea_text, chatBox],

@@ -75,6 +75,7 @@ class SearchAPITool(Tool):
                 continue
             search_params[k] = v
         input = tool_input.get_data("input")
+        print("input", input)
         if self.search_type == "json":
             return self.search_api_wrapper.results(query=input, **search_params)
         context = self.search_api_wrapper.run(query=input, **search_params)
