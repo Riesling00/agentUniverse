@@ -19,6 +19,51 @@ API_KEY = "sk-bcdc4facc1c14dc781a5d4885ae7ea54"
 BASE_URL = "https://api.deepseek.com"
 client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
+import time
+
+import multiprocessing
+
+
+class Timer():
+    def __init__(self):
+        self.st_time = self.ed_time = time.time()
+    
+    def start(self):
+        self.st_time = time.time()
+    
+    def stop(self,msg):
+        self.ed_time = time.time()
+        time_gap = self.ed_time-self.st_time
+        print(f"[Test info]: {msg}: {time_gap:.2f} sec")
+        return time_gap
+
+
+master = Master()
+def master_run(user_input,results_q):
+    timer = Timer()
+    timer.start()
+    output = master.run(user_input)
+    time_cost = timer.stop("master_run")
+    results_q.put(["master",output,time_cost])
+
+
+instance = AgentManager().get_instance_obj('demo_rag_agent')
+def instance_run(user_input,results_q):
+    timer = Timer()
+    timer.start()
+    output = instance.run(input=user_input)
+    time_cost = timer.stop("instance_run")
+    results_q.put(["instance",output,time_cost])
+
+instance_law = AgentManager().get_instance_obj('law_rag_agent')
+def instance_law_run(user_input,results_q):
+    timer = Timer()
+    timer.start()
+    output = instance_law.run(input=user_input)
+    time_cost = timer.stop("instance_law_run")
+    results_q.put(["instance_law",output,time_cost])
+    
+
 class AgentDemo():
     def __init__(self):
         self.instance: Agent = AgentManager().get_instance_obj('demo_rag_agent')
@@ -26,6 +71,9 @@ class AgentDemo():
         self.master = Master()
         self.user_input = ""
         self.res_info = ""
+
+    def instance_run(self,input):
+        return self.instance.run(input=input)
 
     def chat(self, user_input = None):
         """ Rag agent example.
@@ -37,23 +85,57 @@ class AgentDemo():
         if self.user_input == '停止':
             exit
         print(f"\nNot only:\n")
-        result = f"\nNot only:\n" + self.master.run(self.user_input)["output"]
-            
-        output_object: OutputObject = self.instance.run(input=self.user_input)
-        output = self.instance_law.run(input=self.user_input)
-        result += '\n' + f"\nBut also:\n"
-        result += '\n' + output.get_data('output')
-        result += '\n' + output_object.get_data('output')
+
+        # An instance in the results_q should be [ results_type , results , time_cost]
+        # results_type shoule be one string of ['master', 'instance', 'instance_law','chat.completions']
+        results_q = multiprocessing.Queue()
+        process_master = multiprocessing.Process(target=master_run,args=(self.user_input,results_q) )
+        process_instance = multiprocessing.Process(target=instance_run,args=(self.user_input,results_q) )
+        process_instance_law = multiprocessing.Process(target=instance_law_run,args=(self.user_input,results_q) )
+        process_list = [process_master, process_instance, process_instance_law]
+        
+        chat_timer = Timer()
+        chat_timer.start()
+
+        for process in process_list:
+            process.start()
+        chat_timer.stop("process.start()")
+        
+        chat_timer.start()
+        for process in process_list:
+            process.join()
+        chat_timer.stop("process.join()")
+        
+        chat_timer.start()
+        resulst_map = {}
+        time_sum = 0
+        while (not results_q.empty()):
+            result_item = results_q.get()
+            resulst_map[result_item[0]] = result_item[1]
+            time_sum += result_item[2]
+        
+        output = f"\nNot only:\n {resulst_map['master']['output']}"
+        output += '\n' + f"\nBut also:\n"
+        output += resulst_map['instance'].get_data('output')
+        output += resulst_map['instance_law'].get_data('output')
+        chat_timer.stop("get output")
+        print(f"[Test info]: time_sum = {time_sum:.2f} sec")
+
+        print(f"output = {output}")
+
+        chat_timer.start()
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant，把输入内容进行，保持感情基调"},
-                {"role": "user", "content": result},
+                {"role": "user", "content": output},
             ],
             stream=False
         ).choices[0].message.content
+        chat_timer.stop("client.chat.completions")
+
         self.res_info = response
-        print(f"\n{response}")
+        print(f"response = {response}")
         return response
 
     def __deepcopy__(self, memo):
@@ -71,7 +153,11 @@ class AgentDemo():
 
 if __name__ == '__main__':
     x = AgentDemo()
+    main_timer = Timer()
     for i in range(5):
+        # Sample: 我不想学英语，我该怎么办呢
         user_input = input("请输入内容,如果想退出请输入停止: ")
+        main_timer.start()
+        print('user_input =',user_input)
         x.chat(user_input)
-
+        main_timer.stop("Total time")
